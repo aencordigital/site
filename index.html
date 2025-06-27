@@ -1,0 +1,181 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CoreLogicX: AI-powered SaaS and marketing automation to drive business growth." />
+  <title>CoreLogicX | Supercharged AI Marketing</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; background: #ffffff; color: #1a1a1a; overflow-x: hidden; }
+    nav { position: fixed; top: 0; width: 100%; background: #1a1a1a; padding: 20px 0; z-index: 1000; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    nav a { margin: 0 25px; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 1.2rem; text-transform: uppercase; transition: color 0.3s; }
+    nav a:hover, nav a:focus, nav a.active { color: #f5a623; }
+    header { background: linear-gradient(135deg, rgba(26,26,26,0.9), rgba(26,26,26,0.7)), url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'); background-size: cover; background-attachment: fixed; color: #ffffff; padding: 150px 20px; text-align: center; min-height: 700px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    header h1 { font-size: 4.5rem; margin: 0; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
+    header p { font-size: 1.8rem; max-width: 800px; margin: 20px auto; font-weight: 400; }
+    .cta-container { display: flex; gap: 30px; justify-content: center; }
+    .btn { background: #f5a623; color: #1a1a1a; padding: 18px 40px; border: none; cursor: pointer; display: inline-block; text-decoration: none; font-weight: 700; text-transform: uppercase; border-radius: 8px; transition: transform 0.3s, box-shadow 0.3s; }
+    .btn:hover, .btn:focus { transform: scale(1.05); box-shadow: 0 6px 16px rgba(0,0,0,0.3); }
+    .btn.secondary { background: transparent; border: 2px solid #f5a623; color: #f5a623; }
+    section { padding: 100px 20px; max-width: 1200px; margin: auto; text-align: center; }
+    h2 { color: #1a1a1a; font-weight: 900; font-size: 2.5rem; text-transform: uppercase; }
+    h3 { font-size: 1.8rem; margin: 20px 0 10px; font-weight: 700; }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px; margin-top: 40px; }
+    .service-item { background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: transform 0.3s; }
+    .service-item:hover { transform: translateY(-8px); }
+    .service-item p { font-size: 1.1rem; line-height: 1.6; margin: 10px 0 0; }
+    .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px; margin-top: 30px; }
+    .testimonial-item { background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: transform 0.3s; }
+    .testimonial-item:hover { transform: translateY(-8px); }
+    .testimonial-item img { width: 120px; height: 120px; border-radius: 50%; margin-bottom: 15px; object-fit: cover; }
+    .testimonial-item h3 { font-size: 1.5rem; margin: 0 0 10px; color: #1a1a1a; }
+    .testimonial-item p { font-size: 1.1rem; line-height: 1.6; }
+    .about-image { max-width: 700px; width: 100%; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: block; margin: 30px auto; }
+    footer { background: #1a1a1a; color: #ffffff; padding: 60px 20px; text-align: center; }
+    footer a { color: #f5a623; text-decoration: none; margin: 0 20px; font-size: 1.2rem; }
+    .logo { width: 250px; height: 20px; margin-bottom: 20px; border-radius: 10px; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    section { animation: fadeIn 1s ease-in-out; }
+    @media (max-width: 768px) { 
+      header h1 { font-size: 2.5rem; } 
+      header p { font-size: 1.2rem; } 
+      .btn { padding: 14px 30px; } 
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="active">Home</a>
+    <a href="services.html">Services</a>
+    <a href="case-studies.html">Case Studies</a>
+    <a href="about.html">About</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <header>
+    <!-- Insert new logo URL here, e.g., <img src="your-logo-url.jpg" alt="CoreLogicX Logo" class="logo" /> -->
+    <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=250&q=80" alt="CoreLogicX Logo" class="logo" />
+    <h1>Supercharged Marketing to Drive Revenue</h1>
+    <p>Leverage CoreLogicX’s AI-powered SaaS and marketing automation to transform your business and achieve explosive growth.</p>
+    <div class="cta-container">
+      <a href="contact.html" class="btn">Get Started</a>
+      <a href="services.html" class="btn secondary">Explore Services</a>
+    </div>
+  </header>
+
+  <section id="services">
+    <h2>Our Services</h2>
+    <p>Explore our AI-powered solutions designed to boost efficiency and growth for your business.</p>
+    <div class="services-grid">
+      <div class="service-item">
+        <h3>AI Smart Assistant</h3>
+        <p>Automate customer interactions with 24/7 call handling, reducing response times by 80%.</p>
+      </div>
+      <div class="service-item">
+        <h3>AI Power Dialer</h3>
+        <p>Streamline outreach with automated dialing, boosting call connections by 50%.</p>
+      </div>
+      <div class="service-item">
+        <h3>AI Marketing</h3>
+        <p>Optimize campaigns with data-driven insights, achieving up to 60% ROI improvements.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="about-us">
+    <h2>About CoreLogicX</h2>
+    <p>At CoreLogicX, we empower businesses in solar, roofing, and home improvement with cutting-edge AI-powered SaaS and marketing automation. Our mission is to drive explosive growth by streamlining operations, enhancing customer engagement, and maximizing ROI. With a vision to redefine industry standards, we deliver scalable, data-driven solutions that integrate seamlessly with your existing tools.</p>
+    <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=700&q=80" alt="CoreLogicX Team Collaboration" class="about-image" />
+  </section>
+
+  <section id="testimonials">
+    <h2>What Our Clients Say</h2>
+    <p>Hear from businesses transformed by CoreLogicX’s AI-driven solutions.</p>
+    <div class="testimonials-grid">
+      <div class="testimonial-item">
+        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=120&h=120&q=80" alt="John Martinez, SolarTech CEO" />
+        <h3>John Martinez</h3>
+        <p><strong>CEO, SolarTech Solutions</strong></p>
+        <p>“CoreLogicX’s AI Smart Assistant tripled our lead conversion rate in just two months. It’s like having a 24/7 sales team that never misses a call!”</p>
+      </div>
+      <div class="testimonial-item">
+        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=120&h=120&q=80" alt="Emily Chen, RoofPro Manager" />
+        <h3>Emily Chen</h3>
+        <p><strong>Operations Manager, RoofPro</strong></p>
+        <p>“The AI Power Dialer cut our outreach time by 50%, letting us focus on closing deals. CoreLogicX is a game-changer for roofing businesses.”</p>
+      </div>
+      <div class="testimonial-item">
+        <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?ixlib=rb-4.0.3&auto=format&fit=crop&w=120&h=120&q=80" alt="Michael Brown, HomeFix Owner" />
+        <h3>Michael Brown</h3>
+        <p><strong>Owner, HomeFix Renovations</strong></p>
+        <p>“With CoreLogicX’s AI Marketing, our campaign ROI soared by 60%. The real-time insights helped us target the right customers every time.”</p>
+      </div>
+      <div class="testimonial-item">
+        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=120&h=120&q=80" alt="Sarah Patel, SunBright CFO" />
+        <h3>Sarah Patel</h3>
+        <p><strong>CFO, SunBright Solar</strong></p>
+        <p>“CoreLogicX’s seamless integration with QuickBooks saved us countless hours. Their analytics dashboard is now our go-to for financial planning.”</p>
+      </div>
+      <div class="testimonial-item">
+        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=120&h=120&q=80" alt="David Lee, EliteRoof COO" />
+        <h3>David Lee</h3>
+        <p><strong>COO, EliteRoof Contractors</strong></p>
+        <p>“The AI Email Automation boosted our open rates by 45%. CoreLogicX helped us personalize outreach like never before.”</p>
+      </div>
+      <div class="testimonial-item">
+        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=120&h=120&q=80" alt="Laura Kim, RenoTrend Founder" />
+        <h3>Laura Kim</h3>
+        <p><strong>Founder, RenoTrend Innovations</strong></p>
+        <p>“CoreLogicX’s AI Consultation gave us a tailored strategy that increased our qualified leads by 70%. They truly understand home improvement needs.”</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2025 CoreLogicX. All rights reserved.</p>
+    <p>
+      <a href="#">Facebook</a> | <a href="#">LinkedIn</a> | <a href="#">Twitter</a>
+    </p>
+    <a href="contact.html" class="btn">Get Started Today</a>
+  </footer>
+</body>
+</html>

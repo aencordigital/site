@@ -1,0 +1,215 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="CoreLogicX: Learn about our mission to empower businesses with AI-powered SaaS and marketing automation." />
+  <title>About | CoreLogicX</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <style>
+    body { font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; background: #ffffff; color: #1a1a1a; overflow-x: hidden; }
+    nav { position: fixed; top: 0; width: 100%; background: #1a1a1a; padding: 20px 0; z-index: 1000; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    nav a { margin: 0 25px; color: #ffffff; text-decoration: none; font-weight: 700; font-size: 1.2rem; text-transform: uppercase; transition: color 0.3s; }
+    nav a:hover, nav a:focus, nav a.active { color: #f5a623; }
+    header { background: linear-gradient(135deg, rgba(26,26,26,0.9), rgba(26,26,26,0.7)), url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'); background-size: cover; background-attachment: fixed; color: #ffffff; padding: 150px 20px; text-align: center; min-height: 700px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    header h1 { font-size: 4.5rem; margin: 0; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
+    header p { font-size: 1.8rem; max-width: 800px; margin: 20px auto; font-weight: 400; }
+    .cta-container { display: flex; gap: 30px; justify-content: center; }
+    .btn { background: #f5a623; color: #1a1a1a; padding: 18px 40px; border: none; cursor: pointer; display: inline-block; text-decoration: none; font-weight: 700; text-transform: uppercase; border-radius: 8px; transition: transform 0.3s, box-shadow 0.3s; }
+    .btn:hover, .btn:focus { transform: scale(1.05); box-shadow: 0 6px 16px rgba(0,0,0,0.3); }
+    section { padding: 100px 20px; max-width: 1200px; margin: auto; text-align: center; }
+    h2, h3, h4 { color: #1a1a1a; font-weight: 900; text-transform: uppercase; }
+    h2 { font-size: 2.5rem; }
+    h3 { font-size: 1.8rem; margin-top: 40px; }
+    h4 { font-size: 1.4rem; margin: 10px 0; }
+    p { font-size: 1.1rem; line-height: 1.6; max-width: 800px; margin: 20px auto; }
+    .about-image { max-width: 700px; width: 100%; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: block; margin: 30px auto; }
+    .metrics-container { max-width: 250px; height: 350px; margin: 20px auto; background: #ffffff; padding: 15px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .metrics-container canvas { width: 220px; height: 300px; }
+    footer { background: #1a1a1a; color: #ffffff; padding: 60px 20px; text-align: center; }
+    footer a { color: #f5a623; text-decoration: none; margin: 0 20px; font-size: 1.2rem; }
+    .logo { max-width: 250px; margin-bottom: 20px; border-radius: 10px; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    section { animation: fadeIn 1s ease-in-out; }
+    @media (max-width: 768px) { header h1 { font-size: 2.5rem; } header p { font-size: 1.2rem; } .btn { padding: 14px 30px; } .metrics-container { max-width: 200px; height: 300px; } .metrics-container canvas { width: 180px; height: 250px; } }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="services.html">Services</a>
+    <a href="case-studies.html">Case Studies</a>
+    <a href="about.html" class="active">About</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <header>
+    <!-- Insert new logo URL here, e.g., <img src="your-logo-url.jpg" alt="CoreLogicX Logo" class="logo" /> -->
+    <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=250&q=80" alt="CoreLogicX Logo" class="logo" />
+    <h1>About CoreLogicX</h1>
+    <p>Discover how we empower businesses with AI-powered SaaS and marketing automation.</p>
+    <div class="cta-container">
+      <a href="contact.html" class="btn">Get Started</a>
+    </div>
+  </header>
+
+  <section id="about-us">
+    <h2>Our Story</h2>
+    <p>At CoreLogicX, we are driven by a singular mission: to empower businesses in the solar, roofing, and home improvement industries with transformative AI-powered SaaS and marketing automation solutions. Founded in 2020, CoreLogicX emerged from a vision to bridge the gap between cutting-edge technology and practical business needs. Our founders, a group of innovators with decades of experience in AI, software development, and industry-specific marketing, recognized that businesses in these sectors faced unique challenges—inefficient lead generation, high operational costs, and fragmented customer engagement. They set out to create a platform that not only addresses these pain points but also propels businesses toward exponential growth.</p>
+
+    <h3>Our Mission</h3>
+    <p>Our mission is to revolutionize how businesses operate by leveraging artificial intelligence to streamline processes, enhance customer interactions, and maximize return on investment. We believe that technology should not be a barrier but a catalyst for success. By integrating predictive analytics, real-time insights, and seamless automation, CoreLogicX enables companies to focus on what they do best—delivering exceptional products and services—while we handle the complexities of data-driven decision-making and customer outreach. Whether it’s a solar installer seeking to boost lead conversions or a roofing contractor aiming to scale operations, we provide tailored solutions that drive measurable results.</p>
+
+    <h3>Our Vision</h3>
+    <p>CoreLogicX envisions a future where every business, regardless of size, can harness the power of AI to compete at the highest level. We aim to redefine industry standards by delivering scalable, data-driven solutions that empower businesses to achieve explosive growth. Our vision extends beyond technology—we strive to create a world where businesses in solar, roofing, and home improvement thrive through innovation, efficiency, and unparalleled customer experiences. By 2030, we aspire to be the go-to partner for over 10,000 businesses worldwide, transforming the way these industries operate and setting new benchmarks for success.</p>
+
+    <h3>Our Journey</h3>
+    <p>CoreLogicX began as a small startup in a San Francisco co-working space, fueled by a passion for innovation and a commitment to solving real-world problems. In our first year, we developed the AI Smart Assistant, a groundbreaking tool that automated customer interactions with unprecedented accuracy, reducing response times by 80% for early adopters. By 2022, we had expanded our offerings to include AI Power Dialer and AI Marketing solutions, helping clients like BrightSun Solar achieve a 60% increase in appointment bookings. Our rapid growth led to partnerships with industry leaders, integrating our platform with tools like QuickBooks and HubSpot. Today, with over 70 businesses trusting our solutions, CoreLogicX has become a trusted name in AI-driven growth, with a client base spanning North America, Europe, and Australia.</p>
+
+    <h3>Our Values</h3>
+    <p>At the heart of CoreLogicX are four core values that guide everything we do:</p>
+    <p><strong>Innovation:</strong> We push the boundaries of what’s possible, embracing the latest advancements in AI and machine learning to deliver cutting-edge solutions. Our team is constantly exploring new ways to optimize workflows and enhance customer engagement, ensuring our clients stay ahead of the curve.</p>
+    <p><strong>Customer Success:</strong> Our clients’ success is our success. We partner closely with each business, offering tailored strategies and 24/7 support to ensure they achieve their goals. From increasing lead-to-close rates by 75% to boosting campaign ROI by 60%, we measure our impact through our clients’ results.</p>
+    <p><strong>Integrity:</strong> Transparency and trust are non-negotiable. We provide clear, honest insights into how our solutions work and deliver real-time analytics to empower informed decision-making. Our commitment to integrity builds lasting relationships with our clients.</p>
+    <p><strong>Collaboration:</strong> We believe in the power of teamwork—both within our organization and with our clients. Our collaborative approach ensures that every solution is customized to fit the unique needs of each business, fostering a partnership that drives long-term success.</p>
+
+    <h3>Our Team</h3>
+    <p>CoreLogicX is powered by a diverse team of experts who bring together deep expertise in AI, software engineering, and industry-specific marketing. Our leadership team includes:</p>
+    <p><strong>Dr. Elena Rodriguez, CEO:</strong> A pioneer in AI with a Ph.D. in Machine Learning from Stanford, Elena has over 15 years of experience developing scalable SaaS platforms. Her vision drives CoreLogicX’s innovation.</p>
+    <p><strong>Mark Thompson, CTO:</strong> With a background in software architecture, Mark leads our engineering team, ensuring our solutions are robust, secure, and seamlessly integrated with client systems.</p>
+    <p><strong>Sofia Patel, CMO:</strong> Sofia’s expertise in marketing automation has helped clients like PeakRoof Contractors achieve a 40% revenue increase through targeted AI-driven campaigns.</p>
+    <p><strong>James Lee, Head of Customer Success:</strong> James ensures every client receives personalized support, helping businesses like HomeTrend Renovations achieve a 70% increase in qualified leads.</p>
+    <p>Our team of over 50 engineers, data scientists, and industry specialists works tirelessly to deliver solutions that are both powerful and user-friendly. We’re united by a shared passion for transforming businesses and a commitment to excellence.</p>
+    <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=700&q=80" alt="CoreLogicX Team Collaboration" class="about-image" />
+
+    <div id="growth-metrics">
+      <h3>Our Growth in Real Time</h3>
+      <p>Watch how CoreLogicX drives revenue growth for businesses, updated in real time.</p>
+      <div class="metrics-container">
+        <h4>Revenue Growth</h4>
+        <canvas id="revenueChart" aria-label="Animated line chart showing revenue growth"></canvas>
+      </div>
+    </div>
+
+    <h3>Our Industry Focus</h3>
+    <p>CoreLogicX specializes in serving the solar, roofing, and home improvement industries, where operational efficiency and customer engagement are critical. Our AI Smart Assistant automates customer interactions, ensuring businesses never miss a call and can engage leads 24/7. The AI Power Dialer boosts outreach, increasing call connections by 50%, while our AI Marketing tools optimize campaigns, delivering up to 60% improvements in ROI. For example, BrightSun Solar saw a 75% lead-to-close rate, and HomeTrend Renovations achieved a 45% conversion rate within months of adopting our solutions. By integrating with tools like QuickBooks, we streamline financial workflows, saving clients countless hours.</p>
+
+    <h3>Our Impact</h3>
+    <p>Since our inception, CoreLogicX has empowered over 70 businesses to achieve measurable growth. Our clients have reported 12+ appointments per week, an 85% response rate, and significant cost savings through automation. We’ve helped businesses scale effortlessly, with seamless integrations and real-time analytics that provide actionable insights. Our AI-driven approach has transformed operations for companies like EliteRoof Contractors, who saw a 40% revenue increase, and SunBright Solar, who saved hours with our QuickBooks integration. These results are not just numbers—they represent real businesses thriving in competitive markets.</p>
+
+    <h3>Why Choose CoreLogicX?</h3>
+    <p>Choosing CoreLogicX means partnering with a team that understands your industry and is committed to your success. Our solutions are designed to be intuitive, scalable, and impactful, delivering results from day one. Whether you’re a small solar startup or a large roofing contractor, we provide the tools to compete at the highest level. Our AI-driven platforms are backed by a team of experts who are always ready to support you, ensuring your business achieves its full potential.</p>
+
+    <h3>Join Us on the Journey</h3>
+    <p>At CoreLogicX, we’re more than a technology provider—we’re a partner in your growth. As we look to the future, we’re excited to continue innovating, expanding our reach, and helping businesses redefine what’s possible. Join the over 70 companies worldwide that trust CoreLogicX to supercharge their operations. Ready to transform your business? Let’s get started.</p>
+    <a href="contact.html#contact-form" class="btn">Get Started Today</a>
+  </section>
+
+  <script>
+    // Line Chart: Revenue Growth
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    const revenueChart = new Chart(revenueCtx, {
+      type: 'line',
+      data: {
+        labels: ['2020', '2021', '2022', '2023', '2024', '2025'],
+        datasets: [{
+          label: 'Revenue ($K)',
+          data: [100, 110, 120, 130, 140, 150],
+          borderColor: '#f5a623',
+          backgroundColor: 'rgba(245, 166, 35, 0.2)',
+          fill: true,
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          title: { display: true, text: 'Revenue Growth', font: { family: 'Montserrat', size: 14, weight: '700' } }
+        },
+        scales: {
+          y: { 
+            beginAtZero: true, 
+            max: 200, 
+            ticks: { 
+              font: { size: 11 }, 
+              callback: function(value) { return value + 'K'; },
+              maxTicksLimit: 5
+            } 
+          },
+          x: { 
+            ticks: { 
+              font: { size: 10 }, 
+              maxTicksLimit: 6, 
+              autoSkip: true 
+            } 
+          }
+        },
+        animation: { duration: 2000, easing: 'easeInOutQuad' }
+      }
+    });
+
+    // Simulate real-time updates every 5 seconds
+    setInterval(() => {
+      const lastRevenue = revenueChart.data.datasets[0].data[revenueChart.data.datasets[0].data.length - 1];
+      if (lastRevenue < 200) {
+        revenueChart.data.datasets[0].data.push(lastRevenue + 5);
+        revenueChart.data.labels.push('');
+        if (revenueChart.data.datasets[0].data.length > 6) {
+          revenueChart.data.datasets[0].data.shift();
+          revenueChart.data.labels.shift();
+        }
+        revenueChart.update();
+      }
+    }, 5000);
+  </script>
+
+  <footer>
+    <p>© 2025 CoreLogicX. All rights reserved.</p>
+    <p>
+      <a href="#">Facebook</a> | <a href="#">LinkedIn</a> | <a href="#">Twitter</a>
+    </p>
+    <a href="contact.html" class="btn">Get Started Today</a>
+  </footer>
+</body>
+</html>
